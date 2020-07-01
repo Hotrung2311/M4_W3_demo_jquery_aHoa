@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>List Smartphone</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Create new Smartphone</h1>
+    <div>
+        <p>Here you can create new Smartphone:</p>
+        <div id="sPhoneFromResponse"></div>
+    </div>
+    <form id="newSmartphoneForm" th:object="${sPhone}">
+        <table>
+            <tbody>
+            <tr>
+                <td>Producer:</td>
+                <td>
+                    <select id="producer">
+                        <option value="NOKIA">Nokia</option>
+                        <option selected="selected" value="IPHONE">iPhone</option>
+                        <option value="HTC">HTC</option>
+                        <option value="SAMSUNG">Samsung</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Model:</td>
+                <td><input th:field="*{model}" /></td>
+            </tr>
+            <tr>
+                <td>Price:</td>
+                <td><input th:field="*{price}" /></td>
+            </tr>
+            <tr>
+                <td><input type="button" value="Create" onclick="addPhone()" /></td>
+                <td></td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+    <a th:href="@{/smartphones}">List</a>
+    <h1>All Smartphones</h1>
+    <a th:href="@{/smartphones/create}">Create</a>
+    <div>
+        <p>Here you can see a list of Smartphones:</p>
+        <div id="sPhoneFromResponse"></div>
+    </div>
+    <table border="1px" cellpadding="0" cellspacing="0" id="smartphonesList">
+        <thead>
+        <tr>
+            <th>Producer</th>
+            <th>Model</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="phone : ${allphones}">
+            <tr>
+                <td th:text="${phone.producer}"></td>
+                <td th:text="${phone.model}"></td>
+                <td th:text="${phone.price}"></td>
+                <td>
+                    <a th:href="@{/smartphones/edit/__${phone.id}__}">Edit</a><br/>
+                    <a th:href="@{/smartphones/delete/__${phone.id}__}">Delete</a><br/>
+                </td>
+            </tr>
+        </th:block>
+        </tbody>
+    </table>
+    <a th:href="@{/}">Home page</a>
+</div>
+
+<script>
+    function addPhone() {
+        let producer = document.getElementById("producer").value;
+        let model = document.getElementById("model").value;
+        let price = document.getElementById("price").value;
+
+        let smartphone = {
+            producer: producer,
+            model: model,
+            price: price
+        };
+
+        $.ajax({
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            url: 'http://localhost:8080/api/smartphones',
+            type: 'POST',
+            data: JSON.stringify(smartphone),
+            success: successHandler,
+            error: errorHandler
+        });
+    }
+
+    function successHandler() {
+        $.ajax({
+            url: 'http://localhost:8080/api/smartphones',
+            type: 'GET',
+            success: showSmartphoneList
+        });
+    }
+
+    function errorHandler() {
+        alert('Them khong duoc!');
+    }
+
+    function showSmartphoneList(response) {
+        // hien thi danh sach o day
+
+        let tableContent = `<thead>
+        <tr>
+            <th>Producer</th>
+            <th>Model</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>`;
+
+        for (let i = 0 ; i < response.length; i++) {
+            tableContent += getSmartphoneRow(response[i]);
+        }
+
+        tableContent += '</tbody>';
+
+        document.getElementById('smartphonesList').innerHTML = tableContent;
+    }
+
+    function getSmartphoneRow(smartphone) {
+
+        return `<tr>
+                <td>${smartphone.producer}</td>
+                <td>${smartphone.model}</td>
+                <td>${smartphone.price}</td>
+                <td>
+                    <a>Edit</a><br/>
+                    <a>Delete</a><br/>
+                </td>
+            </tr>`;
+
+    }
+</script>
+</body>
+</html>
